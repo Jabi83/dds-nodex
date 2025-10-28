@@ -12,10 +12,13 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY src/ /app/src/
 
-# ==================== بخش اصلاح شده ====================
-# پوشه‌ها را می‌سازیم و فایل از پیش ساخته شده را کپی می‌کنیم
 RUN mkdir -p /app/config /app/data
 COPY config/config.json /app/config/config.json
+
+# ==================== بخش اصلاح شده ====================
+# اسکریپت ورودی جدید را کپی کرده و آن را قابل اجرا می‌کنیم
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 # ======================================================
 
 RUN chown -R app:app /app
@@ -31,6 +34,8 @@ ENV PYTHONUNBUFFERED=1 \
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD \
   python -c "import os,sys,time; p=os.path.join(os.getenv('DATA_DIR','/app/data'),'.heartbeat'); mx=int(os.getenv('HEALTH_MAX_AGE','180')); sys.exit(0 if (os.path.exists(p) and (time.time()-os.path.getmtime(p) < mx)) else 1)"
 
-USER app
-ENTRYPOINT ["/usr/bin/tini","--"]
+# ==================== بخش اصلاح شده ====================
+# نقطه ورود را به اسکریپت جدید تغییر می‌دهیم
+ENTRYPOINT ["entrypoint.sh"]
+# دستور CMD بدون تغییر باقی می‌ماند و به عنوان آرگومان به entrypoint.sh پاس داده می‌شود
 CMD ["python","-m","src.main"]
