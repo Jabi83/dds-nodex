@@ -30,4 +30,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: your-dockerhub-username/dds-nodex:latest # <-- این خط را چک کنید که درست باشد
+          tags: jabi83/dds-nodex:latest # <-- این خط را چک کنید که درست باشد
