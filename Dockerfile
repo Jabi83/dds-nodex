@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  ca-certificates tini \
+  ca-certificates tini dos2unix \
   && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -u 10001 app
@@ -16,9 +16,13 @@ RUN mkdir -p /app/config /app/data
 COPY config/config.json /app/config/config.json
 
 # ==================== بخش اصلاح شده ====================
-# اسکریپت ورودی جدید را کپی کرده و آن را قابل اجرا می‌کنیم
+# اسکریپت ورودی جدید را کپی می‌کنیم
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# 1. فرمت فایل را از ویندوز (CRLF) به یونیکس (LF) تبدیل می‌کنیم تا خطای no such file ندهد
+# 2. اسکریپت را قابل اجرا می‌کنیم
+RUN dos2unix /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/entrypoint.sh
 # ======================================================
 
 RUN chown -R app:app /app
@@ -35,7 +39,6 @@ HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD \
   python -c "import os,sys,time; p=os.path.join(os.getenv('DATA_DIR','/app/data'),'.heartbeat'); mx=int(os.getenv('HEALTH_MAX_AGE','180')); sys.exit(0 if (os.path.exists(p) and (time.time()-os.path.getmtime(p) < mx)) else 1)"
 
 # ==================== بخش اصلاح شده ====================
-# نقطه ورود را به اسکریپت جدید تغییر می‌دهیم
-ENTRYPOINT ["entrypoint.sh"]
-# دستور CMD بدون تغییر باقی می‌ماند و به عنوان آرگومان به entrypoint.sh پاس داده می‌شود
+# نقطه ورود را با مسیر کامل و مطلق مشخص می‌کنیم
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["python","-m","src.main"]
