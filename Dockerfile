@@ -16,21 +16,19 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # کپی کردن سورس کد برنامه
 COPY src/ /app/src/
 
-# ==================== بخش اصلاح شده ====================
-
-# 1. ابتدا پوشه‌های config و data را می‌سازیم
+# ابتدا پوشه‌های config و data را می‌سازیم
 RUN mkdir -p /app/config /app/data
 
-# 2. آرگومان حاوی محتوای config.json را از secret گیت‌هاب دریافت می‌کنیم
+# آرگومان حاوی محتوای config.json را از secret گیت‌هاب دریافت می‌کنیم
 ARG CONFIG_JSON_CONTENT
 
-# 3. حالا که پوشه وجود دارد، فایل config.json را با محتوای دریافتی ایجاد می‌کنیم
-RUN echo "${CONFIG_JSON_CONTENT}" > /app/config/config.json
-
-# 4. مالکیت تمام فایل‌ها و پوشه‌ها را به کاربر app می‌دهیم
-RUN chown -R app:app /app
-
+# ==================== خط اصلاح شده ====================
+# با استفاده از سینگل کوتیشن، محتوای JSON را به صورت دست‌نخورده در فایل می‌نویسیم
+RUN echo '${CONFIG_JSON_CONTENT}' > /app/config/config.json
 # ======================================================
+
+# مالکیت تمام فایل‌ها و پوشه‌ها را به کاربر app می‌دهیم
+RUN chown -R app:app /app
 
 # تنظیم متغیرهای محیطی
 ENV PYTHONUNBUFFERED=1 \
