@@ -1,0 +1,34 @@
+name: Build and Push Docker Image
+
+# این اکشن زمانی اجرا می‌شود که کدی به شاخه main پوش شود یا به صورت دستی اجرا شود
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest # این کار روی یک سرور مجازی اوبونتو انجام می‌شود
+
+    steps:
+      # 1. کد شما را از ریپازیتوری دانلود می‌کند
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. با استفاده از secretهایی که ساختید، به داکر هاب لاگین می‌کند
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. ایمیج داکر را می‌سازد و به داکر هاب آپلود می‌کند
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: jabi83/dds-nodex:latest # <-- این خط را حتماً ویرایش کنید
+          # آرگومان زیر فایل config.json را به صورت امن در زمان ساخت ایمیج ایجاد می‌کند
+          build-args: |
+            CONFIG_JSON_CONTENT=${{ secrets.CONFIG_JSON }}
