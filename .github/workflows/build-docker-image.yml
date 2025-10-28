@@ -13,11 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # مرحله جدید: فایل config.json را قبل از ساخت ایمیج ایجاد می‌کند
-      - name: Create config.json from secret
-        run: |
-          mkdir -p config
-          echo "${{ secrets.CONFIG_JSON }}" > config/config.json
+      # ==================== بخش اصلاح شده ====================
+      # از یک Action اختصاصی برای ساخت فایل استفاده می‌کنیم تا از خطاهای شل جلوگیری شود
+      - name: Create config directory
+        run: mkdir -p config
+      
+      - name: Create config.json file safely
+        uses: damienaicheh/create-file-action@v1
+        with:
+          file_name: config/config.json
+          content: ${{ secrets.CONFIG_JSON }}
+      # ======================================================
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
