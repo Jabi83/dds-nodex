@@ -1,0 +1,33 @@
+services:
+  dds-nodex:
+    build: .
+    image: dds-nodex:prod
+    container_name: dds-nodex
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SYNC_INTERVAL_MINUTES: ${SYNC_INTERVAL_MINUTES:-1}
+      REQUEST_TIMEOUT: ${REQUEST_TIMEOUT:-10}
+      DATA_DIR: /app/data
+      DB_FILE: /app/data/traffic_state.db
+      ENABLE_FILE_LOG: ${ENABLE_FILE_LOG:-0}
+      CONFIG_FILE: /app/config/config.json
+      HEALTH_MAX_AGE: ${HEALTH_MAX_AGE:-180}
+      # متغیرهای شبکه و دیتابیس که از .env خوانده می‌شوند
+      NET_PARALLEL_NODE_CALLS: ${NET_PARALLEL_NODE_CALLS:-true}
+      NET_MAX_WORKERS: ${NET_MAX_WORKERS:-12}
+      NET_REQUEST_TIMEOUT: ${NET_REQUEST_TIMEOUT:-15}
+      NET_CONNECT_POOL_SIZE: ${NET_CONNECT_POOL_SIZE:-100}
+      NET_VALIDATE_TTL_SECONDS: ${NET_VALIDATE_TTL_SECONDS:-180}
+      DB_WAL: ${DB_WAL:-1}
+      DB_SYNCHRONOUS: ${DB_SYNCHRONOUS:-NORMAL}
+      DB_CACHE_SIZE_MB: ${DB_CACHE_SIZE_MB:-64}
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config:ro
+    read_only: true
+    tmpfs: [ "/tmp" ]
+    security_opt: [ "no-new-privileges:true" ]
+    cap_drop: [ "ALL" ]
