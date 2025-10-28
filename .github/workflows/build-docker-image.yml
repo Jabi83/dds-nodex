@@ -14,15 +14,13 @@ jobs:
         uses: actions/checkout@v3
 
       # ==================== بخش اصلاح شده ====================
-      # از یک Action اختصاصی برای ساخت فایل استفاده می‌کنیم تا از خطاهای شل جلوگیری شود
-      - name: Create config directory
-        run: mkdir -p config
-      
-      - name: Create config.json file safely
-        uses: damienaicheh/create-file-action@v1
-        with:
-          file_name: config/config.json
-          content: ${{ secrets.CONFIG_JSON }}
+      # از تکنیک Heredoc برای ساخت فایل استفاده می‌کنیم که کاملاً ضدخطا است
+      - name: Create config.json file safely using Heredoc
+        run: |
+          mkdir -p config
+          cat << 'EOF' > config/config.json
+          ${{ secrets.CONFIG_JSON }}
+          EOF
       # ======================================================
 
       - name: Log in to Docker Hub
