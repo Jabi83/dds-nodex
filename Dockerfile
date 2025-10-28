@@ -1,36 +1,25 @@
 FROM python:3.12-slim
 
-# نصب ابزارهای ضروری
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates tini \
   && rm -rf /var/lib/apt/lists/*
 
-# ساخت کاربر غیر روت برای امنیت بیشتر
 RUN useradd -m -u 10001 app
 WORKDIR /app
 
-# نصب وابستگی‌های پایتون
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# کپی کردن سورس کد برنامه
 COPY src/ /app/src/
 
-# ابتدا پوشه‌های config و data را می‌سازیم
+# ==================== بخش اصلاح شده ====================
+# پوشه‌ها را می‌سازیم و فایل از پیش ساخته شده را کپی می‌کنیم
 RUN mkdir -p /app/config /app/data
-
-# آرگومان حاوی محتوای config.json را از secret گیت‌هاب دریافت می‌کنیم
-ARG CONFIG_JSON_CONTENT
-
-# ==================== خط اصلاح شده ====================
-# با استفاده از سینگل کوتیشن، محتوای JSON را به صورت دست‌نخورده در فایل می‌نویسیم
-RUN echo '${CONFIG_JSON_CONTENT}' > /app/config/config.json
+COPY config/config.json /app/config/config.json
 # ======================================================
 
-# مالکیت تمام فایل‌ها و پوشه‌ها را به کاربر app می‌دهیم
 RUN chown -R app:app /app
 
-# تنظیم متغیرهای محیطی
 ENV PYTHONUNBUFFERED=1 \
   LOG_LEVEL=INFO \
   HEALTH_MAX_AGE=180 \
@@ -39,11 +28,9 @@ ENV PYTHONUNBUFFERED=1 \
   DB_FILE=/app/data/traffic_state.db \
   ENABLE_FILE_LOG=0
 
-# تعریف Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD \
   python -c "import os,sys,time; p=os.path.join(os.getenv('DATA_DIR','/app/data'),'.heartbeat'); mx=int(os.getenv('HEALTH_MAX_AGE','180')); sys.exit(0 if (os.path.exists(p) and (time.time()-os.path.getmtime(p) < mx)) else 1)"
 
-# اجرای برنامه با کاربر غیر روت
 USER app
 ENTRYPOINT ["/usr/bin/tini","--"]
 CMD ["python","-m","src.main"]
