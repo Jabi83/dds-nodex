@@ -16,6 +16,11 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # Copy application source code
 COPY src/ /app/src/
 
+# این آرگومان را از دستور build دریافت می‌کند
+ARG CONFIG_JSON_CONTENT
+# فایل config.json را با محتوای دریافتی ایجاد می‌کند
+RUN echo "${CONFIG_JSON_CONTENT}" > /app/config/config.json
+
 # Create config and data directories, set ownership to app user
 RUN mkdir -p /app/config /app/data && chown -R app:app /app
 
