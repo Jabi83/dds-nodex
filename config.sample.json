@@ -1,0 +1,15 @@
+
+{
+  "central_server": {
+    "url": "https://YOUR_CENTRAL_URL.clawcloudrun.com",
+    "username": "YOUR_USERNAME",
+    "password": "YOUR_PASSWORD"
+  },
+  "nodes": [
+    {
+      "url": "https://YOUR_NODE_URL.clawcloudrun.com",
+      "username": "YOUR_USERNAME",
+      "password": "YOUR_PASSWORD"
+    }
+  ]
+}
