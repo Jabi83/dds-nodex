@@ -111,16 +111,24 @@ class SyncManager:
                         self.api_manager.add_inbound(node, node_session, central_inbound)
                     else:
                         # ==================== شروع جایگزینی از اینجا ====================
-                        # یک کپی از اطلاعات اینباند مرکزی ایجاد می‌کنیم تا اصل آن دستکاری نشود
+                        # یک کپی از اطلاعات اینباند مرکزی ایجاد می‌کنیم
                         data_for_node = central_inbound.copy()
                         
-                        # فیلد 'remark' (نام اینباند) را از داده‌های ارسالی به نود حذف می‌کنیم.
-                        data_for_node.pop('remark', None)
+                        # اینباند فعلی را از روی نود پیدا می‌کنیم
+                        current_node_inbound = node_inbound_map[cid]
                         
-                        # حالا کپی ویرایش شده را برای آپدیت ارسال می‌کنیم
+                        # --- ۱. نام (remark) را از نود می‌خوانیم و حفظ می‌کنیم ---
+                        node_remark = current_node_inbound.get('remark', '')
+                        data_for_node['remark'] = node_remark
+                        
+                        # --- ۲. پورت (port) را از نود می‌خوانیم و حفظ می‌کنیم ---
+                        # اگر به هر دلیلی پورت وجود نداشت، 0 را به عنوان پیش‌فرض در نظر می‌گیریم
+                        node_port = current_node_inbound.get('port', 0)
+                        data_for_node['port'] = node_port
+                        
+                        # حالا بسته کامل شده را برای آپدیت ارسال می‌کنیم
                         self.api_manager.update_inbound(node, node_session, cid, data_for_node)
                         
-                        # این خط باید با خطوط بالا هم‌تراز باشد
                         node_inbound_map.pop(cid, None)
                 # Remove inbounds that are not present on the central server
                 for inbound_id in list(node_inbound_map.keys()):
